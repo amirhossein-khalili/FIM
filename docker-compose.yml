@@ -1,0 +1,110 @@
+version: "3.8"
+
+services:
+  db:
+    image: docker.arvancloud.ir/postgres:16.8
+    container_name: postgres_boilerplate_container
+    ports:
+      - "${DATABASE_PORT}:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  cache:
+    image: docker.arvancloud.ir/redis:7.4.2
+    container_name: redis_boilerplate_container
+    ports:
+      - "${CACHE_PORT}:6379"
+    env_file:
+      - .env
+    volumes:
+      - cachedata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  broker:
+    image: docker.arvancloud.ir/redis:7.4.2
+    container_name: broker_boilerplate_container
+    ports:
+      - "${CELERY_BROKER_PORT}:6379"
+    env_file:
+      - .env
+    volumes:
+      - brokerdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio_boilerplate_container
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web Console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - miniodata:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - backend
+    restart: unless-stopped
+
+  app:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    # image: boilerplate
+    container_name: boilerplate_container
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - CACHE_LOCATION=redis://cache:6379/0
+      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+      - CELERY_BROKER_URL=redis://broker:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - FCM_SERVER_API_KEY=${FCM_SERVER_KEY}
+      - SMS_NUMBER_SENDER=${SMS_NUMBER_SENDER}
+      - SMS_SERVER_API_KEY=${SMS_SERVER_API_KEY}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+    depends_on:
+      - db
+      - cache
+      - broker
+    env_file:
+      - .env
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+  cachedata:
+  brokerdata:
+
+networks:
+  backend:
+    driver: bridge
