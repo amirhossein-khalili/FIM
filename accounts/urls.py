@@ -5,5 +5,6 @@ from .views import AdminApproveUserView, UserLoginView, UserSignupView
 
 app_name = "accounts"
 urlpatterns = [
-    path("sign-up/", UserSignupView.as_view(), name="auth"),
+    path("sign-up/", UserSignupView.as_view(), name="sign-up"),
+    path("login/", UserLoginView.as_view(), name="login"),
 ]
