@@ -5,11 +5,8 @@ from accounts.services.abstracts.user_validation_service import (
 
 
 class UserValidationServiceImpl(AbstractUserValidationService):
-    def user_exists(self, phone: str) -> bool:
-        """
-        Check if a user with the given phone number exists.
-        """
-        return User.objects.filter(phone=phone).exists()
+    def user_exists(self, user_name: str) -> bool:
+        return User.objects.filter(user_name=user_name).exists()
 
     def has_user_access(self, user) -> bool:
-        return user.is_active
+        return user.is_active and user.is_approved

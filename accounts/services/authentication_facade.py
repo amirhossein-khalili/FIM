@@ -1,34 +1,44 @@
+from django.core.exceptions import ValidationError
+
 from accounts.models import User
 from accounts.services.jwt_service_impl import JWTServiceImpl
-from accounts.services.otp_service_impl import OTPServiceImpl
+from accounts.services.telegram_service import TelegramService
 from accounts.services.user_validation_impl import UserValidationServiceImpl
 
 
 class AuthenticationFacade:
     def __init__(self):
-        self.otp_service = OTPServiceImpl()
         self.jwt_service = JWTServiceImpl()
         self.user_validation = UserValidationServiceImpl()
+        self.telegram_service = TelegramService()
 
-    def request_otp(self, phone: str) -> dict:
-        return self.otp_service.send_otp(phone)
+    def signup(self, username: str, password: str) -> dict:
+        # Create the user with the username and password
+        user = User.objects.create_user(user_name=username, password=password)
 
-    def verify_otp_and_authenticate(self, phone: str, otp: str) -> dict:
-        if self.otp_service.verify_otp(phone, otp):
+        # Send notification to Telegram bot about new signup
+        self.telegram_service.send_signup_notification(user)
 
-            if self.user_validation.user_exists(phone):
-                user = User.objects.get(phone=phone)
-            else:
-                user = User.objects.create_user(phone=phone)
+        return {"message": "Signup successful. Awaiting admin approval."}
 
-            if self.user_validation.has_user_access(user):
+    def approve_user(self, user_id: int) -> dict:
+        try:
+            user = User.objects.get(id=user_id)
+            user.is_approved = True
+            user.save()
+            return {"message": "User approved successfully."}
+        except User.DoesNotExist:
+            return {"error": "User not found."}
+
+    def login(self, username: str, password: str) -> dict:
+        user = User.objects.get(user_name=username)
+
+        # Check if user is approved
+        if user.is_approved:
+            if user.check_password(password):
                 tokens = self.jwt_service.generate_token(user)
-
-                return {
-                    "tokens": tokens,
-                    "is_new_user": not self.user_validation.user_exists(phone),
-                }
-
-            raise PermissionError("User has no access ")
-
-        raise ValueError("Invalid OTP")
+                return {"tokens": tokens}
+            else:
+                return {"error": "Invalid password"}
+        else:
+            return {"error": "User not approved by admin"}
