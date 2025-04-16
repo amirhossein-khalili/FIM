@@ -50,7 +50,7 @@ class FileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def __init__(self, file_repository=None, storage_service=None, **kwargs):
-        super().__init__(**kwargs)FileRepository
+        super().__init__(**kwargs)
         file_instance = self.file_repository.get_file_by_guid(guid, request.user)
         if not file_instance:
             return Response(
