@@ -1,8 +1,6 @@
-# models.py
 import uuid
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -23,7 +21,4 @@ class File(models.Model):
         return self.original_name
 
     class Meta:
-        unique_together = (
-            "user",
-            "original_name",
-        )
+        unique_together = ("user", "original_name")

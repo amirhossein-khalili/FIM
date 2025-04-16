@@ -5,14 +5,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from files.services import FileService
-
-from .models import File
-from .serializers import FileSerializer, FileUploadSerializer
+from files.models import File
+from files.repositories.file_repository import FileRepository
+from files.serializers import FileSerializer, FileUploadSerializer
+from files.services.storage_service import S3StorageService
 
 
 class FileUploadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def __init__(self, file_repository=None, storage_service=None, **kwargs):
+        super().__init__(**kwargs)
+        self.file_repository = file_repository or FileRepository()
+        self.storage_service = storage_service or S3StorageService()
 
     def post(self, request):
         file_obj = request.FILES.get("file")
@@ -21,24 +26,19 @@ class FileUploadView(APIView):
                 {"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check for existing file
-        if File.objects.filter(user=request.user, original_name=file_obj.name).exists():
-            existing_file = File.objects.get(
-                user=request.user, original_name=file_obj.name
-            )
+        existing_file = self.file_repository.get_file_by_name(
+            request.user, file_obj.name
+        )
+        if existing_file:
             serializer = FileUploadSerializer(existing_file)
             return Response(
-                {
-                    "message": "File uploaded successfully",
-                },
+                {"message": "File already exists", "file": serializer.data},
                 status=status.HTTP_200_OK,
-                # {"message": "File already exists", "file": serializer.data},
-                # status=status.HTTP_200_OK,
             )
 
-        # Upload new file
         file_instance = File(original_name=file_obj.name, user=request.user)
-        file_instance.file.save(file_obj.name, file_obj, save=True)
+        file_instance.file.save(file_obj.name, file_obj, save=False)
+        self.file_repository.save_file(file_instance)
         serializer = FileUploadSerializer(file_instance)
         return Response(
             {"message": "File uploaded successfully", "file": serializer.data},
@@ -49,69 +49,60 @@ class FileUploadView(APIView):
 class FileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, guid):
-        try:
-            # ABAC: Ensure the file belongs to the requesting user
-            file_instance = File.objects.get(guid=guid, user=request.user)
-
-            # Initialize boto3 client for MinIO
-            s3_client = boto3.client(
-                "s3",
-                endpoint_url=settings.AWS_S3_ENDPOINT_URL,
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                region_name=settings.AWS_S3_REGION_NAME,
-                use_ssl=settings.AWS_S3_USE_SSL,
-            )
-
-            # Generate presigned URL for the file
-            file_key = file_instance.file.name  # e.g., "documents/filename.ext"
-            try:
-                presigned_url = s3_client.generate_presigned_url(
-                    "get_object",
-                    Params={
-                        "Bucket": settings.AWS_STORAGE_BUCKET_NAME,
-                        "Key": file_key,
-                    },
-                    ExpiresIn=3600,  # URL valid for 1 hour
-                )
-                # Redirect to the presigned URL for immediate download/view
-                return HttpResponseRedirect(presigned_url)
-            except ClientError as e:
-                return Response(
-                    {"error": "Unable to access file"},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-
-        except File.DoesNotExist:
+    def __init__(self, file_repository=None, storage_service=None, **kwargs):
+        super().__init__(**kwargs)FileRepository
+        file_instance = self.file_repository.get_file_by_guid(guid, request.user)
+        if not file_instance:
             return Response(
                 {"error": "File not found or you don't have access"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        presigned_url = self.storage_service.generate_presigned_url(
+            file_instance.file.name
+        )
+        if presigned_url:
+            return HttpResponseRedirect(presigned_url)
+        return Response(
+            {"error": "Unable to access file"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
 
 class FileListView(generics.ListAPIView):
     serializer_class = FileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def __init__(self, file_repository=None, **kwargs):
+        super().__init__(**kwargs)
+        self.file_repository = file_repository or FileRepository()
 
     def get_queryset(self):
-        service = FileService()
-        return service.get_user_files(self.request.user)
+        return self.file_repository.get_user_files(self.request.user)
 
 
 class FileUrlView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def __init__(self, file_repository=None, storage_service=None, **kwargs):
+        super().__init__(**kwargs)
+        self.file_repository = file_repository or FileRepository()
+        self.storage_service = storage_service or S3StorageService()
 
     def get(self, request, guid):
-        try:
-            file_instance = File.objects.get(guid=guid, user=request.user)
-            service = FileService()
-            presigned_url = service.get_file_url(file_instance)
-            if presigned_url:
-                return Response({"url": presigned_url})
-            else:
-                return Response({"error": "Unable to generate URL"}, status=500)
-        except File.DoesNotExist:
+        file_instance = self.file_repository.get_file_by_guid(guid, request.user)
+        if not file_instance:
             return Response(
-                {"error": "File not found or you don’t have access"}, status=404
+                {"error": "File not found or you don’t have access"},
+                status=status.HTTP_404_NOT_FOUND,
             )
+
+        presigned_url = self.storage_service.generate_presigned_url(
+            file_instance.file.name
+        )
+        if presigned_url:
+            return Response({"url": presigned_url})
+        return Response(
+            {"error": "Unable to generate URL"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
