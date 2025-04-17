@@ -1,20 +1,22 @@
+from __future__ import absolute_import, unicode_literals
+
 import os
 
 from celery import Celery
+
+from core import settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 app = Celery("core")
 
-
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
-
-app.autodiscover_tasks()
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 app.conf.beat_schedule = {
-    "delete-expired-otps-every-5-minutes": {
-        "task": "your_app.tasks.delete_expired_otps",
-        "schedule": 300.0,
+    "scan virus files": {
+        "task": "files.tasks.main_files_virus_scan",
+        "schedule": 25.0,
     },
 }
