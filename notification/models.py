@@ -6,6 +6,7 @@ class NotificationType(models.TextChoices):
     SMS = "S"
     PUSH = "P"
     DEV = "D"
+    TELEGRAM = "T"
 
 
 class Notification(models.Model):

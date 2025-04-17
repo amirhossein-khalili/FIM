@@ -4,6 +4,7 @@ from notification.factories.dev_factory import DevNotificationFactory
 from notification.factories.email_factory import EmailNotificationFactory
 from notification.factories.push_factory import PushNotificationFactory
 from notification.factories.sms_factory import SMSNotificationFactory
+from notification.factories.telegram_bot_factory import TelegramBotServiceNotificationFactory
 
 from .models import NotificationType
 
@@ -31,6 +32,8 @@ def notification_service_creator(notification_type=None):
         return PushNotificationFactory().create_notification_service()
     elif notification_type == NotificationType.SMS:
         return SMSNotificationFactory().create_notification_service()
+    elif notification_type == NotificationType.TELEGRAM:
+        return TelegramBotServiceNotificationFactory().create_notification_service()
     elif settings.DEBUG == True:
         return DevNotificationFactory().create_notification_service()
     else:
