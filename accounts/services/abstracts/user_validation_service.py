@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 
 class AbstractUserValidationService(ABC):
     @abstractmethod
-    def user_exists(self, phone: str) -> bool:
+    def user_exists(self, user_name: str) -> bool:
         """
-        Check if a user with the given phone number exists.
+        Check if a user with the given user_name number exists.
         """
         pass
 

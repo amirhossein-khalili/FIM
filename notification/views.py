@@ -20,7 +20,7 @@ class PushNotificationListView(generics.ListAPIView):
 
     This view ensures that:
       - Only push notifications are returned.
-      - Each user sees only notifications addressed to their phone number.
+      - Each user sees only notifications addressed to their user_name.
     """
 
     serializer_class = NotificationSerializer
@@ -29,9 +29,9 @@ class PushNotificationListView(generics.ListAPIView):
 
     def get_queryset(self):
         """
-        Return a queryset of push notifications filtered by the authenticated user's phone number.
+        Return a queryset of push notifications filtered by the authenticated user's user_name.
         """
         return Notification.objects.filter(
             notification_type=NotificationType.PUSH,
-            recipient=self.request.user.phone,
+            recipient=self.request.user.user_name,
         ).order_by("-sent_at")

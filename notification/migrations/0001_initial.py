@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 (
                     "recipient",
                     models.CharField(
-                        help_text="Recipient's email, phone number, or device ID",
+                        help_text="Recipient's email, user_name number, or device ID",
                         max_length=255,
                     ),
                 ),

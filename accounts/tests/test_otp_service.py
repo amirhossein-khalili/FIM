@@ -11,7 +11,7 @@
 # class OTPServiceImplTest(TestCase):
 
 #     def setUp(self):
-#         self.phone = "1234567890"
+#         self.user_name = "1234567890"
 
 #     @patch("accounts.services.otp_service_impl.notification_service_creator")
 #     def test_send_otp(self, mock_notification_service_creator):
@@ -23,18 +23,18 @@
 #         otp_service = OTPServiceImpl()
 
 #         # Call send_otp and capture the response.
-#         response = otp_service.send_otp(self.phone)
+#         response = otp_service.send_otp(self.user_name)
 #         self.assertEqual(response["message"], "OTP sent successfully")
 
 #         # Check if an OTP instance is stored in the database.
-#         otp_instance = OTP.objects.get(phone=self.phone)
-#         self.assertEqual(otp_instance.phone, self.phone)
+#         otp_instance = OTP.objects.get(user_name=self.user_name)
+#         self.assertEqual(otp_instance.user_name, self.user_name)
 #         self.assertIsInstance(otp_instance.code, str)
 #         self.assertEqual(len(otp_instance.code), 4)
 
 #         # Verify that the send_notification method was called with the correct parameters.
 #         mock_notification_service.send_notification.assert_called_once_with(
-#             recipient=self.phone, message=f"you otp code is \n {otp_instance.code}"
+#             recipient=self.user_name, message=f"you otp code is \n {otp_instance.code}"
 #         )
 
 #     @patch("accounts.services.otp_service_impl.notification_service_creator")
@@ -47,13 +47,13 @@
 
 #         # Create a valid OTP instance with an expiration in the future.
 #         otp_instance = OTP.objects.create(
-#             phone=self.phone,
+#             user_name=self.user_name,
 #             code="1234",
 #             expires_at=timezone.now() + datetime.timedelta(minutes=10),
 #         )
 
 #         # Verify that providing the correct OTP returns True.
-#         response = otp_service.verify_otp(self.phone, "1234")
+#         response = otp_service.verify_otp(self.user_name, "1234")
 #         self.assertTrue(response)
 
 #         # Check that the OTP is marked as used.
@@ -70,11 +70,11 @@
 
 #         # Create an OTP instance.
 #         OTP.objects.create(
-#             phone=self.phone,
+#             user_name=self.user_name,
 #             code="1234",
 #             expires_at=timezone.now() + datetime.timedelta(minutes=10),
 #         )
 
 #         # Verify that providing an incorrect OTP returns False.
-#         response = otp_service.verify_otp(self.phone, "0000")
+#         response = otp_service.verify_otp(self.user_name, "0000")
 #         self.assertFalse(response)

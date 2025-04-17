@@ -8,16 +8,16 @@
 
 #     def setUp(self):
 #         # Create a user for validation tests
-#         self.phone = "1234567890"
-#         self.user = User.objects.create_user(phone=self.phone)
+#         self.user_name = "1234567890"
+#         self.user = User.objects.create_user(user_name=self.user_name)
 #         self.user_validation = UserValidationServiceImpl()
 
 #     def test_user_exists(self):
 #         # Test user exists
-#         self.assertTrue(self.user_validation.user_exists(self.phone))
+#         self.assertTrue(self.user_validation.user_exists(self.user_name))
 
 #         # Test non-existing user
-#         self.assertFalse(self.user_validation.user_exists("nonexistent_phone"))
+#         self.assertFalse(self.user_validation.user_exists("nonexistent_user_name"))
 
 #     def test_has_user_access(self):
 #         # Test if the user has access

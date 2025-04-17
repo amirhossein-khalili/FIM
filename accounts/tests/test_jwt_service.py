@@ -11,7 +11,7 @@
 
 #     def setUp(self):
 #         # Create a user for token generation tests
-#         self.user = User.objects.create_user(phone="1234567890")
+#         self.user = User.objects.create_user(user_name="1234567890")
 #         self.jwt_service = JWTServiceImpl()
 
 #     def test_generate_token(self):
