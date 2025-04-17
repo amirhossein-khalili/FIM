@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 
 from accounts.models import User
 from accounts.services.jwt_service_impl import JWTServiceImpl
-from accounts.services.signup_alert_service import AdminAlertService
+from accounts.services.signup_alert_service_impl import AdminAlertService
 from accounts.services.user_validation_impl import UserValidationServiceImpl
 
 
