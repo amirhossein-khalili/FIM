@@ -14,9 +14,4 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-app.conf.beat_schedule = {
-    "scan virus files": {
-        "task": "files.tasks.main_files_virus_scan",
-        "schedule": 25.0,
-    },
-}
+app.conf.beat_schedule = {}
