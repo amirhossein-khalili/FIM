@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 
 from accounts.models import User
 from accounts.services.jwt_service_impl import JWTServiceImpl
-from accounts.services.signup_alert_service_impl import AdminAlertService
+from accounts.services.signup_alert_service_impl import AdminAuthAlertService
 from accounts.services.user_validation_impl import UserValidationServiceImpl
 
 
@@ -10,17 +10,16 @@ class AuthenticationFacade:
     def __init__(self):
         self.jwt_service = JWTServiceImpl()
         self.user_validation = UserValidationServiceImpl()
-        self.telegram_service = AdminAlertService()
+        self.telegram_service = AdminAuthAlertService()
 
     def signup(self, username: str, password: str) -> dict:
 
-
         # Create the user with the username and password
         user = User.objects.create_user(user_name=username, password=password)
-        
+
         # Send notification to Telegram bot about new signup
         self.telegram_service.send_signup_notification(user)
-        
+
         return {"message": "Signup successful. Awaiting admin approval."}
 
     def approve_user(self, user_id: int) -> dict:

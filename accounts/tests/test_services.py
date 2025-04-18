@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from accounts.models import User
 from accounts.services.authentication_facade import AuthenticationFacade
 from accounts.services.jwt_service_impl import JWTServiceImpl
-from accounts.services.signup_alert_service_impl import AdminAlertService
+from accounts.services.signup_alert_service_impl import AdminAuthAlertService
 from accounts.services.user_validation_impl import UserValidationServiceImpl
 from notification.models import NotificationType
 
@@ -116,7 +116,7 @@ class TestJWTServiceImpl(TestCase):
 
 class TestAdminAlertService(TestCase):
     def setUp(self):
-        self.alert_service = AdminAlertService()
+        self.alert_service = AdminAuthAlertService()
         self.user = User.objects.create_user(
             user_name="testuser", password="testpass123"
         )

@@ -3,7 +3,7 @@ from notification.models import NotificationType
 from notification.provider import notification_service_creator
 
 
-class AdminAlertService(AbstractAdminAlertService):
+class AdminAuthAlertService(AbstractAdminAlertService):
     def __init__(self):
         pass
 
