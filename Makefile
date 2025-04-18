@@ -39,3 +39,6 @@ minio:
 	-v minio_data:/data \
 	--rm \
 	-d minio/minio:latest server /data --console-address ":9001"
+
+all:
+	make redis postgres broker minio 
