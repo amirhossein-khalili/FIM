@@ -77,6 +77,86 @@ services:
     networks:
       - backend
 
+  celerybeat:
+    build: .
+    volumes:
+      - .:/app
+    container_name: celerybeat_boilerplate_container
+    command: celery -A core beat -l info
+    environment:
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - CACHE_LOCATION=redis://cache:6379/0
+      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+      - CELERY_BROKER_URL=redis://broker:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - FCM_SERVER_API_KEY=${FCM_SERVER_KEY}
+      - SMS_NUMBER_SENDER=${SMS_NUMBER_SENDER}
+      - SMS_SERVER_API_KEY=${SMS_SERVER_API_KEY}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_BUCKET_NAME=django-boilerplate
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+      - AWS_STORAGE_BUCKET_NAME=django-boilerplate
+      - AWS_S3_ENDPOINT_URL=http://minio:9000
+      - MINIO_EXTERNAL_ENDPOINT_URL=http://localhost:9000
+      - AWS_S3_REGION_NAME=us-east-1
+      - AWS_S3_USE_SSL=False
+    depends_on:
+      - db
+      - cache
+      - broker
+    env_file:
+      - .env
+    networks:
+      - backend
+
+  celeryworker:
+    build: .
+    volumes:
+      - .:/app
+    container_name: celeryworker_boilerplate_container
+    command: celery -A core worker -l info
+    environment:
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - CACHE_LOCATION=redis://cache:6379/0
+      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+      - CELERY_BROKER_URL=redis://broker:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - FCM_SERVER_API_KEY=${FCM_SERVER_KEY}
+      - SMS_NUMBER_SENDER=${SMS_NUMBER_SENDER}
+      - SMS_SERVER_API_KEY=${SMS_SERVER_API_KEY}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_BUCKET_NAME=django-boilerplate
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+      - AWS_STORAGE_BUCKET_NAME=django-boilerplate
+      - AWS_S3_ENDPOINT_URL=http://minio:9000
+      - MINIO_EXTERNAL_ENDPOINT_URL=http://localhost:9000
+      - AWS_S3_REGION_NAME=us-east-1
+      - AWS_S3_USE_SSL=False
+    depends_on:
+      - db
+      - cache
+      - broker
+    env_file:
+      - .env
+    networks:
+      - backend
+
   app:
     build: .
     volumes:
@@ -100,6 +180,16 @@ services:
       - SMS_SERVER_API_KEY=${SMS_SERVER_API_KEY}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_BUCKET_NAME=django-boilerplate
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+      - AWS_STORAGE_BUCKET_NAME=django-boilerplate
+      - AWS_S3_ENDPOINT_URL=http://minio:9000
+      - MINIO_PUBLIC_ENDPOINT_URL=${MINIO_PUBLIC_ENDPOINT_URL}
+      - AWS_S3_REGION_NAME=us-east-1
+      - AWS_S3_USE_SSL=False
     depends_on:
       - db
       - cache
