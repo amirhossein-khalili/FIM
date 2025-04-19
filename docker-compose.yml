@@ -52,7 +52,7 @@ services:
       - backend
 
   minio:
-    image: minio/minio:latest
+    image: docker.arvancloud.ir/minio/minio:latest
     container_name: minio_boilerplate_container
     ports:
       - "9000:9000" # S3 API
@@ -67,13 +67,22 @@ services:
       - backend
     restart: unless-stopped
 
+  minio-init:
+    image: docker.arvancloud.ir/minio/mc
+    depends_on:
+      - minio
+    env_file:
+      - .env
+    entrypoint: /bin/sh -c "until mc alias set myminio http://minio:9000 \${MINIO_ROOT_USER} \${MINIO_ROOT_PASSWORD}; do sleep 1; done; if ! mc ls myminio/\${MINIO_BUCKET_NAME} > /dev/null 2>&1; then mc mb myminio/\${MINIO_BUCKET_NAME}; fi"
+    networks:
+      - backend
+
   app:
     build: .
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    # image: boilerplate
     container_name: boilerplate_container
     command: python manage.py runserver 0.0.0.0:8000
     environment:
@@ -104,6 +113,7 @@ volumes:
   pgdata:
   cachedata:
   brokerdata:
+  miniodata:
 
 networks:
   backend:
