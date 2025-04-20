@@ -1,10 +1,12 @@
 postgres:
-	docker run --name postgres_boilerplate_container -p 8005:5432 \
+	docker run --name postgres_boilerplate_container \
+	-p 8005:5432 \
 	-e POSTGRES_USER=postgres \
 	-e POSTGRES_PASSWORD=postgres \
 	-v postgres_data:/var/lib/postgresql/data \
 	--rm \
-	-d postgres:latest
+	-d docker.arvancloud.ir/postgres:16.8
+
 
 redis:
 	docker run --name redis_boilerplate_container -p 8006:6379 \
@@ -38,7 +40,7 @@ minio:
 	-e MINIO_ROOT_PASSWORD=minioadmin \
 	-v minio_data:/data \
 	--rm \
-	-d minio/minio:latest server /data --console-address ":9001"
+	-d docker.arvancloud.ir/minio/minio:latest server /data --console-address ":9001"
 
 all:
 	make redis postgres broker minio 
