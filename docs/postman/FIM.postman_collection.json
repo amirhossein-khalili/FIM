@@ -1,0 +1,240 @@
+{
+	"info": {
+		"_postman_id": "12d662c1-cc0c-4aad-83f2-dade7e1eb880",
+		"name": "FIM",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27212483",
+		"_collection_link": "https://bold-escape-508326.postman.co/workspace/bold-escape-508326-Workspace~b8a0226c-e362-47ad-867a-3d8620b68014/collection/27212483-12d662c1-cc0c-4aad-83f2-dade7e1eb880?action=share&source=collection_link&creator=27212483"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "sign up",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\":\"amir\",\n    \"password\":\"amir\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/sign-up/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"sign-up",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonResponse = pm.response.json();",
+									"var accessToken = jsonResponse.tokens.access;",
+									"pm.collectionVariables.set(\"access_token\", accessToken);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\":\"amir\",\n    \"password\":\"amir\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/login/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "files",
+			"item": [
+				{
+					"name": "upload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonResponse = pm.response.json();",
+									"var guid = jsonResponse.file.guid;",
+									"pm.collectionVariables.set(\"guid_file\", guid);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/Users/amir/Downloads/iot.docx"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/files/upload/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"files",
+								"upload",
+								""
+							],
+							"query": [
+								{
+									"key": "file",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "file url",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/files/{{guid_file}}/url/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"files",
+								"{{guid_file}}",
+								"url",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/files/list/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"files",
+								"list",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3NjgwMjgwLCJpYXQiOjE3NDUwODgyODAsImp0aSI6IjVlMTgxYzg1YjAzOTRiOGViNDIxM2MyZGFjMTNhMzVlIiwidXNlcl9pZCI6MX0.nRipZqqyQQh01yvpSHd0Zr2-hU9QEvgjNcfS_44HH8g",
+			"type": "string"
+		},
+		{
+			"key": "guid_file",
+			"value": ""
+		}
+	]
+}
